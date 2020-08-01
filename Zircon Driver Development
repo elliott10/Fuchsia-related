@@ -1,0 +1,67 @@
+Zircon Drivers编写
+
+Doc:
+https://fuchsia.dev/fuchsia-src/concepts/drivers/ddk-tutorial
+https://fuchsia.dev/fuchsia-src/development/drivers/banjo-tutorial
+
+在Zircon中，设备驱动程序实现为 加载到devhost进程中的ELF共享库（DSO）。处在用户空间。
+devhost是一个进程，有单独的pid，通过ELF的DSO共享库../../../third_party/fuchsia-sdk/arch/x64/sysroot/include/zircon/threads.h加载驱动；
+
+大部分驱动源码在//src/devices/
+
+驱动在fuchsia源码树中开发；
+
+dm dump 显示设备数及驱动
+dm drivers
+
+自动化创建一个新驱动程序：fx create driver <NAME> --lang cpp --dest <PATH>
+之后还需要添加编译、测试等相关的配置:
+打包的驱动driver_package编译target需要被包含于//boards或//vendor/boards；
+启动驱动driver_module编译target需要被包含于//build/unification/images/common_image_contents.gni；
+
+
+驱动的一些实用工具utilityies
+i2cutil ping
+lsdev /dev/class/i2c/000
+
+
+系统进程devmgr在系统初始化时，搜索/boot/driver和/system/driver目录来寻找驱动。
+C预处理程序
+宏ZIRCON_DRIVER_BEGIN和ZIRCON_DRIVER_END
+界定了ELF的note部分, 里面条件判断的语句用于devmgr评估是否绑定该驱动到设备,并使用zCore_driver_ops；
+调用number_bind()初始化设备；device_add()发布设备；
+
+
+
+绑定程序Binding Program，决定是否加载哪些设备驱动程序，且描述了一个驱动可以绑定到什么设备；
+绑定的编译器bindc，编译后生成头文件.h。参数--debug可增加调试信息。
+
+
+src/lib/ddk/include/ddk/device.h定义：
+init()，在驱动被加载进devhost进程时会调用；
+bind()，在驱动绑定到设备时会调用；
+create(),platform/system bus驱动或proxy驱动会调用；
+release()，在驱动卸载前会调用；
+
+驱动Firmware存储在CIPD;
+在驱动的rules.mk：
+MODULE_FIRMWARE := <name>/<path-to-binary-blob>
+将安装到bootfs的目录/boot/lib/firmware/$(basename $(MODULE_FIRMWARE))
+
+* 驱动例子：//examples/drivers/
+https://fuchsia.dev/fuchsia-src/concepts/drivers/simple
+
+
+---
+Banjo是一个转译的程序，把接口描述语言IDL转换成目标语言的特定文件。例如把i2c.banjo转译成C和C++代码，未来将可转译成Rust。
+
+对于驱动的C++ DDK模板库，可确保类型安全并执行基本功能的mixins定义在//src/lib/ddktl/include/ddktl/device.h
+
+---
+驱动测试
+驱动需要实现函数run_unit_tests()；
+在内核命令行参数中，
+添加driver.<name>.tests.enable，测试一个特定驱动;
+添加driver.tests.enable，测试所有驱动。
+
+

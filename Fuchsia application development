@@ -1,0 +1,30 @@
+
+fuchsia源码下载：https://fuchsia.dev/fuchsia-src/development/source_code#download-fuchsia-source
+
+编译器clang下载地址：https://chrome-infra-packages.appspot.com/p/fuchsia/third_party/clang/
+
+sdk下载：https://chrome-infra-packages.appspot.com/p/fuchsia/sdk/core/
+
+fx log 获取log
+fx klog 获取内核log
+
+sh上执行程序，需要输入全路径，如"/boot/bin/ps"
+fx cp
+
+component组件是Fuchsia的可执行软件的基本单元;
+
+二进制程序：
+BUILD.gn
+executable("cat") {}
+
+－－－－－－
+v1, component manifest，旧的 组件清单component manifests v1 (.cmx) JSON
+run fuchsia-pkg://fuchsia.com/hello_world_cpp#meta/hello_world_cpp.cmx
+
+
+v2, component manifest source (.cml) JSON5，通过工具cmc编译成 组件清单component manifests v2 (.cm)
+不可以用“run”命令运行。
+component使用了ELF runner,　怎么在命令行运行呢？
+
+-----
+关于zbi包：https://github.com/rcore-os/zCore/issues/122

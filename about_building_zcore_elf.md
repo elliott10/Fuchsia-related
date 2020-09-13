@@ -1,4 +1,4 @@
-### Build zCore ELF to Emulator zbi package 
+### Build zCore ELF to Emulator zbi package (原生方式)
 
 处理编译生成的zCore elf镜像
 `../prebuilt/third_party/clang/linux-x64/bin/llvm-objcopy -O binary ./zcore.elf zcore.bin`
@@ -29,4 +29,66 @@ cd default.zircon
 ```
 cd ../default
 ../../build/unification/zbi/run_zbi.py --zbi host_x64/zbi --depfile ../fuchsia.zbi.d --rspfile ../fuchsia.zbi.rsp --output ../fuchsia.zbi --json-output ../fuchsia.zbi.json --complete=x64 --compressed=zstd
+```
+
+### 非原生方式，使用zCore EFI的方式
+```
+dso: id=8e0b430167c47618 base=0x0000018200000000 name=libc.so
+{{{module:0xa:libunwind.so.1:elf:dc66c3d80e22e1eb}}}
+{{{mmap:0x18200280000:0x4000:load:0xa:r:0}}}
+{{{mmap:0x18200284000:0x6000:load:0xa:rx:0x4000}}}
+{{{mmap:0x1820028a000:0x1000:load:0xa:rw:0xa000}}}
+{{{mmap:0x1820028b000:0x1000:load:0xa:rw:0xb000}}}
+dso: id=dc66c3d80e22e1eb base=0x0000018200280000 name=libunwind.so.1
+[11.629838098s ERROR 0 0:0]
+
+panicked at 'Unhandled interrupt 6 TrapFrame {
+    rax: 0xffffff00015aa880,
+    rbx: 0x11,
+    rcx: 0xffffff01001fc501,
+    rdx: 0x1,
+    rsi: 0x1,
+    rdi: 0xffffff01001fc566,
+    rbp: 0xffffff01001fc510,
+    rsp: 0xffffff01001fc4d8,
+    r8: 0x0,
+    r9: 0x2,
+    r10: 0xfffffffffffffffe,
+    r11: 0xffffff00015b5228,
+    r12: 0x0,
+    r13: 0x0,
+    r14: 0xffffffffffffff48,
+    r15: 0xfefefefefefefeff,
+    _pad: 0x0,
+    trap_num: 0x6,
+    error_code: 0x0,
+    rip: 0xffffff000021cb8c,
+    cs: 0x58,
+    rflags: 0x86,
+}', /home/os/rust/zCore/kernel-hal-bare/src/arch/x86_64/interrupt.rs:74:14
+[11.636896749s ERROR 0 0:0] KCounters {
+    "exceptions.user": 508,
+    "exceptions.timer": 95,
+    "exceptions.pgfault": 0,
+    "Channel.create": 6,
+    "Channel.destroy": 3,
+    "Timer.create": 0,
+    "Timer.destroy": 0,
+    "Event.create": 0,
+    "Event.destroy": 0,
+    "Thread.create": 2,
+    "Thread.destroy": 0,
+    "Process.create": 2,
+    "Process.destroy": 0,
+    "EventPair.create": 0,
+    "EventPair.destroy": 0,
+    "Job.create": 1,
+    "Job.destroy": 0,
+    "vmo.page_alloc": 14419,
+    "vmo.page_dealloc": 3901,
+    "VmObject.create": 45,
+    "VmObject.destroy": 2,
+    "VmAddressRegion.create": 16,
+    "VmAddressRegion.destroy": 1,
+}
 ```

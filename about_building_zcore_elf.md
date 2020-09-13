@@ -1,13 +1,17 @@
 ### Build zCore ELF to Emulator zbi package (原生)
 
 * 处理编译生成的zCore elf镜像
+
 `../prebuilt/third_party/clang/linux-x64/bin/llvm-objcopy -O binary ./zcore.elf zcore.bin`
 
 * 对重定位段进行处理，以在内核地址随机化的正确引导
+
 `./gen-kaslr-fixups.sh ../prebuilt/third_party/clang/linux-x64/bin/llvm-readelf ../prebuilt/third_party/clang/linux-x64/bin/llvm-objdump ./zcore.elf ./kernel-fixups.inc`
 
 * 这里具体是显示重定位段relocation section的地址符号等内容
+
 `../../prebuilt/third_party/clang/linux-x64/bin/llvm-readelf -W -r kernel-x64-clang/obj/kernel/zircon.elf`
+
 如：
 ```
 Relocation section '.rela.text' at offset 0x21b710 contains 71804 entries:
@@ -18,6 +22,7 @@ ffffffff8010122e  00001ed600000004 R_X86_64_PLT32         ffffffff801c1d10 platf
 ```
 
 * 然后把处理过的重定位段的地址，放入叫image的汇编中，以再次处理。后生成kernel.zbi
+
 ```
 cd default.zircon
 ../../prebuilt/third_party/clang/linux-x64/bin/clang -o ../image.image.S.o -DTINY -D_LIBCPP_DISABLE_EXTERN_TEMPLATE -D_LIBCPP_HAS_NO_PLATFORM_WAIT -D_LIBCPP_HAS_THREAD_API_EXTERNAL -D_LIBCPP_HAS_THREAD_LIBRARY_EXTERNAL -D_LIBCPP_STD_VER=20 -DTOOLCHAIN_VERSION=MQXdartdnGbQico1_hNwXV_Z0AhkIdQMCQBwd-ycQ5wC -DZX_ASSERT_LEVEL=2 -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS -DKERNEL_BASE=0xffffffff80100000 -DSMP_MAX_CPUS=32 -D_KERNEL -DLK -DENABLE_PANIC_SHELL -DZIRCON_TOOLCHAIN -DLK_DEBUGLEVEL=2 -DDEBUG_PRINT_LEVEL=2 -DWITH_KERNEL_PCIE -DSCHEDULER_TRACING_LEVEL=0 -DKERNEL_RETPOLINE=1 -DARCH_X86 -DKERNEL_LOAD_OFFSET=0x00100000 -DWITH_FRAME_POINTERS=1 -DWITH_FRAME_POINTERS=1 -DBOOT_HEADER_SIZE=0x50 -DFIDL_TRACE_LEVEL=0 -I../../zircon/kernel/include -I../../zircon/kernel/arch/x86/include -I../../zircon/system/public -I../ --target=x86_64-fuchsia -mcx16 -march=x86-64 -fcrash-diagnostics-dir=clang-crashreports -fcolor-diagnostics -fdebug-compilation-dir . -no-canonical-prefixes -g3 -c ../../zircon/kernel/arch/x86/image.S
@@ -33,6 +38,7 @@ cd ../default
 
 ### 非原生方式，使用zCore EFI的方式
 * Boot issues
+
 ```
 dso: id=8e0b430167c47618 base=0x0000018200000000 name=libc.so
 {{{module:0xa:libunwind.so.1:elf:dc66c3d80e22e1eb}}}
